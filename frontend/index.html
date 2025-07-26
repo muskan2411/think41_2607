@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conversational AI</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0eafc, #cfdef3);
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .chat-container {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    #chat {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      background-color: #f9f9f9;
+    }
+    .message {
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .user {
+      background-color: #d0ebff;
+      align-self: flex-end;
+      text-align: right;
+    }
+    .ai {
+      background-color: #d3f9d8;
+      align-self: flex-start;
+    }
+    .input-container {
+      display: flex;
+      gap: 10px;
+    }
+    #message {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 16px;
+      background-color: #1971c2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #1864ab;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <h2 style="margin-bottom: 15px; text-align: center;">💬 Chat with AI</h2>
+    <div id="chat"></div>
+    <div class="input-container">
+      <input type="text" id="message" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let conversation_id = null;
+    const user_id = "user123";
+
+    function appendMessage(sender, message) {
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      div.textContent = message;
+      document.getElementById("chat").appendChild(div);
+      document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+    }
+
+    async function sendMessage() {
+      const messageBox = document.getElementById("message");
+      const message = messageBox.value.trim();
+      if (!message) return;
+
+      appendMessage("user", message);
+      messageBox.value = "";
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id, message, conversation_id })
+        });
+
+        const data = await response.json();
+        if (data.response) {
+          appendMessage("ai", data.response);
+          conversation_id = data.conversation_id;
+        }
+      } catch (error) {
+        appendMessage("ai", "⚠️ Error connecting to server.");
+      }
+    }
+  </script>
+</body>
+</html>
